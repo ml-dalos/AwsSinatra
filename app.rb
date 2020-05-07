@@ -1,6 +1,10 @@
 class AwsSinatra < Sinatra::Application
+  register Sinatra::ConfigFile
+
+  config_file 'config/secrets.yml'
+
   get '/' do
-    'Hello world'
+    @author = settings.author
     erb :index
   end
 

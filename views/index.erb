@@ -1,1 +1,18 @@
-Hello Sinatra
+<div class="page-wrap d-flex flex-row align-items-center" style="min-height: 70vh">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-7 text-center">
+        <div class="card text-center">
+          <div class="card-header">
+            Author info
+          </div>
+          <div class="card-body">
+            <p class="card-text">Student: <%= @author[:name] %></p>
+            <p class="card-text">Group: <%= @author[:group] %></p>
+            <p class="card-text">Created at: <%= @author[:date] %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
