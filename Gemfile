@@ -3,5 +3,12 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.6.3'
 
+# Sinatra
 gem 'sinatra'
 gem 'sinatra-contrib'
+
+# Aws
+gem 'aws-sdk-s3'
+
+# Pry for debug
+gem 'pry-byebug'
