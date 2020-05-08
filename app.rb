@@ -11,20 +11,6 @@ class AwsSinatra < Sinatra::Application
 
   config_file 'config/secrets.yml'
 
-  VALID_REGIONS = %w[
-    eu-west-1
-    us-west-1
-    us-west-2
-    us-east-2
-    ap-south-1
-    ap-southeast-1
-    ap-southeast-2
-    ap-northeast-1
-    sa-east-1
-    cn-north-1
-    eu-central-1
-  ]
-
   get '/' do
     @author = settings.author
     erb :index
@@ -42,9 +28,7 @@ class AwsSinatra < Sinatra::Application
 
   post '/buckets/new' do
     bucket = nil
-    if valid_bucket_request?(request)
-      bucket = AwsS3Client.new(settings.aws).new_bucket(request.params)
-    end
+    bucket = AwsS3Client.new(settings.aws).new_bucket(request.params)
   rescue Aws::S3::Errors::BucketAlreadyExists
     flash[:danger] = "Bucket with name #{request.params['bucket_name']} already exists!"
   rescue Aws::S3::Errors::BucketAlreadyOwnedByYou
@@ -61,10 +45,8 @@ class AwsSinatra < Sinatra::Application
   end
 
   delete '/buckets' do
-    if valid_bucket_request?(request)
-      AwsS3Client.new(settings.aws).delete_bucket(request.params)
-      flash[:success] = 'Bucket deleted!'
-    end
+    AwsS3Client.new(settings.aws).delete_bucket(request.params)
+    flash[:success] = 'Bucket deleted!'
   rescue => e
     flash[:danger] = e.message
   ensure
@@ -77,15 +59,5 @@ class AwsSinatra < Sinatra::Application
 
   error do
     env['sinatra.error']
-  end
-
-  private
-
-  def valid_bucket_request?(request)
-    if request.params['bucket_name'].to_s.empty? || !VALID_REGIONS.include?(request.params['bucket_region'])
-      flash[:danger] = 'Request invalid'
-      false
-    end
-    true
   end
 end
