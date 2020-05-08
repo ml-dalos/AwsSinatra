@@ -1,0 +1,56 @@
+<br/>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <form method="POST" role="form" action="/objects/new">
+<!--        <label class="btn btn-outline-secondary">-->
+            <input  type="file" name="file-name" required />
+<!--            Browse-->
+<!--        </label>-->
+        <button type="submit" class="btn btn-success mb-2">Upload &uarr;</button>
+      </form>
+    </div>
+  </div>
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Last modified</th>
+      <th scope="col">Size</th>
+      <th scope="col">Access</th>
+      <th scope="col">Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @objects.each do |object| %>
+      <tr>
+        <th scope="row"><%= object[:index] %></th>
+        <td><a href=<%= object[:url] %> class="text-dark"><%= object[:name] %></td>
+        <td><%= object[:last_modified] %></td>
+        <td><%= object[:size] %></td>
+        <td>
+          <form method="POST" role="form">
+            <%= object[:public] ? 'Public' : 'Private' %>
+
+            <!--            <input name="bucket_name" type="hidden" value=<%#= bucket[:name] %>/>-->
+            <!--            <input name="bucket_region" type="hidden" value=<%#= bucket[:region] %>/>-->
+
+            <button type="submit" class="btn btn-sm btn-info">&olarr;</button>
+          </form>
+        </td>
+        <td>
+
+          <form method="POST" role="form">
+            <!--            <input name="_method" type="hidden" value="delete" />-->
+            <!--            <input name="bucket_name" type="hidden" value=<%#= bucket[:name] %> />-->
+            <!--            <input name="bucket_region" type="hidden" value=<%#= bucket[:region] %> />-->
+
+            <button type="submit" class="btn btn-danger">&times;</button>
+          </form>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>

@@ -58,9 +58,17 @@ class AwsSinatra < Sinatra::Application
   end
 
   get '/buckets/:name' do
-    binding.pry
+    @objects = AwsS3Client.new(settings.aws).get_objects(params['name'])
+    erb :'buckets/show'
+  rescue => e
+    flash[:danger] = e.message
+    redirect '/buckets', 302
   end
 
+
+  # TODO:
+  # add page with objects listing(table like buckets) with buttons for deleting and change public
+  # under table form with file_filed for loading object
   not_found do
     erb :'404'
   end

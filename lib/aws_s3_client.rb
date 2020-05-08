@@ -62,6 +62,23 @@ class AwsS3Client
     client.delete_bucket(bucket: params['bucket_name'])
   end
 
+  def get_objects(bucket_name)
+    region          = @client.get_bucket_location(bucket: bucket_name).location_constraint
+    bucket_client   = Aws::S3::Client.new(region: region, credentials: @credentials)
+    bucket_resource = Aws::S3::Resource.new(client: bucket_client)
+    bucket_resource.bucket(bucket_name).objects.map.with_index do |object, index|
+      # binding.pry
+      {
+        index: index.next,
+        name: object.key,
+        last_modified: object.last_modified,
+        url: object.public_url,
+        size: object.size,
+        public:  object.acl.grants.any? {|grant| grant.grantee.uri == 'http://acs.amazonaws.com/groups/global/AllUsers' && grant.permission == 'READ'}
+      }
+    end
+  end
+
   private
 
   def create_bucket_struct(bucket, index)
