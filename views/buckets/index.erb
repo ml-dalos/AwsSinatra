@@ -28,7 +28,15 @@
         <td><%= bucket[:creation_date] %></td>
         <td><%= bucket[:access] %></td>
         <td><%= bucket[:region] %></td>
-        <td><a href="#" class="btn btn-danger">&times;</a></td>
+        <td>
+          <form method="POST" role="form">
+            <input name="_method" type="hidden" value="delete" />
+            <input name="bucket_name" type="hidden" value=<%= bucket[:name] %> />
+            <input name="bucket_region" type="hidden" value=<%= bucket[:region] %> />
+
+            <button type="submit" class="btn btn-danger">&times;</button>
+          </form>
+        </td>
       </tr>
     <% end %>
     </tbody>

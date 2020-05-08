@@ -35,6 +35,11 @@ class AwsS3Client
     result
   end
 
+  def delete_bucket(params)
+    client = Aws::S3::Client.new(region: params['bucket_region'], credentials: @credentials)
+    client.delete_bucket(bucket: params['bucket_name'])
+  end
+
   private
 
   def create_bucket_struct(bucket, index)

@@ -5,6 +5,7 @@ require './lib/aws_s3_client'
 class AwsSinatra < Sinatra::Application
   register Sinatra::ConfigFile
   register Sinatra::Flash
+  use Rack::MethodOverride
 
   enable :sessions
 
@@ -14,6 +15,7 @@ class AwsSinatra < Sinatra::Application
     eu-west-1
     us-west-1
     us-west-2
+    us-east-2
     ap-south-1
     ap-southeast-1
     ap-southeast-2
@@ -25,18 +27,12 @@ class AwsSinatra < Sinatra::Application
 
   get '/' do
     @author = settings.author
-  rescue => e
-    flash[:danger] = e.message
-  ensure
     erb :index
   end
 
   get '/buckets' do
     client   = AwsS3Client.new(settings.aws)
     @buckets = client.buckets
-  rescue => e
-    flash[:danger] = e.message
-  ensure
     erb :'buckets/index'
   end
 
@@ -46,7 +42,7 @@ class AwsSinatra < Sinatra::Application
 
   post '/buckets/new' do
     bucket = nil
-    if valid_bucket_new_request?(request)
+    if valid_bucket_request?(request)
       bucket = AwsS3Client.new(settings.aws).new_bucket(request.params)
     end
   rescue Aws::S3::Errors::BucketAlreadyExists
@@ -64,6 +60,17 @@ class AwsSinatra < Sinatra::Application
     end
   end
 
+  delete '/buckets' do
+    if valid_bucket_request?(request)
+      AwsS3Client.new(settings.aws).delete_bucket(request.params)
+      flash[:success] = 'Bucket deleted!'
+    end
+  rescue => e
+    flash[:danger] = e.message
+  ensure
+    redirect '/buckets', 302
+  end
+
   not_found do
     erb :'404'
   end
@@ -74,7 +81,7 @@ class AwsSinatra < Sinatra::Application
 
   private
 
-  def valid_bucket_new_request?(request)
+  def valid_bucket_request?(request)
     if request.params['bucket_name'].to_s.empty? || !VALID_REGIONS.include?(request.params['bucket_region'])
       flash[:danger] = 'Request invalid'
       false
