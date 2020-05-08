@@ -12,6 +12,9 @@ author:
   name: Ivan Ivanov
   date: 01 january 2021
   group: 550505
+auth:
+  username: cool_username
+  password: cool_password
 ```
 
 For starting app use:

@@ -9,6 +9,7 @@ ruby '2.6.3'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sinatra-flash'
+gem 'sinatra-basic-auth'
 
 # Aws
 gem 'aws-sdk-s3'

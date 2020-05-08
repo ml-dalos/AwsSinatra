@@ -11,6 +11,10 @@ class AwsSinatra < Sinatra::Application
 
   config_file 'config/secrets.yml'
 
+  use Rack::Auth::Basic, "Protected Area" do |username, password|
+    username == settings.auth[:username] && password == settings.auth[:password]
+  end
+
   get '/' do
     @author = settings.author
     erb :index
@@ -51,6 +55,10 @@ class AwsSinatra < Sinatra::Application
     flash[:danger] = e.message
   ensure
     redirect '/buckets', 302
+  end
+
+  get '/buckets/:name' do
+    binding.pry
   end
 
   not_found do
