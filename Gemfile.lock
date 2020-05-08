@@ -47,8 +47,9 @@ GEM
       rack-protection (= 2.0.8.1)
       sinatra (= 2.0.8.1)
       tilt (~> 2.0)
+    sinatra-flash (0.3.0)
+      sinatra (>= 1.0.0)
     tilt (2.0.10)
-    zeitwerk (2.3.0)
 
 PLATFORMS
   ruby
@@ -58,7 +59,7 @@ DEPENDENCIES
   pry-byebug
   sinatra
   sinatra-contrib
-  zeitwerk
+  sinatra-flash
 
 RUBY VERSION
    ruby 2.6.3p62
