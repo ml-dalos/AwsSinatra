@@ -40,11 +40,11 @@
         </td>
         <td>
 
-          <form method="POST" role="form">
-            <!--            <input name="_method" type="hidden" value="delete" />-->
-            <!--            <input name="bucket_name" type="hidden" value=<%#= bucket[:name] %> />-->
-            <!--            <input name="bucket_region" type="hidden" value=<%#= bucket[:region] %> />-->
-
+          <form method="POST" role="form" action="/objects">
+            <input name="_method" type="hidden" value="delete" />
+            <input name="bucket_name" type="hidden" value=<%= @bucket.name %> />
+            <input name="bucket_region" type="hidden" value=<%= @region %> />
+            <input name="object_name" type="hidden" value=<%= object[:name].split(' ').join('_') %> />
             <button type="submit" class="btn btn-danger">&times;</button>
           </form>
         </td>

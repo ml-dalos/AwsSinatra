@@ -58,9 +58,11 @@ class AwsSinatra < Sinatra::Application
   end
 
   get '/buckets/:name' do
-    @objects = AwsS3Client.new(settings.aws).get_objects(params['name'])
-    @bucket  = AwsS3Client.new(settings.aws).resource.bucket(params['name'])
-    @region = AwsS3Client.new(settings.aws).client.get_bucket_location(bucket: @bucket.name).location_constraint
+    # refactor
+    client = AwsS3Client.new(settings.aws)
+    @objects = client.get_objects(params['name'])
+    @bucket  = client.resource.bucket(params['name'])
+    @region = client.client.get_bucket_location(bucket: @bucket.name).location_constraint
     erb :'buckets/show'
   rescue => e
     flash[:danger] = e.message
@@ -72,6 +74,7 @@ class AwsSinatra < Sinatra::Application
       flash[:danger] = 'Invalid filename'
       redirect back
     end
+    # Add params validation
     filename = params['file']['filename']
     tempfile = params['file']['tempfile']
     bucket   = AwsS3Client.new(settings.aws, region: params['bucket_region']).resource.bucket(params['bucket_name'])
@@ -88,6 +91,16 @@ class AwsSinatra < Sinatra::Application
     redirect back
   end
 
+  delete '/objects' do
+    # refactor
+    bucket   = AwsS3Client.new(settings.aws, region: params['bucket_region']).resource.bucket(params['bucket_name'])
+    bucket.object(params['object_name']).delete
+    flash[:success] = 'Object deleted!'
+  rescue => e
+    flash[:danger] = e.message
+  ensure
+    redirect back, 302
+  end
 
   # TODO:
   # configure upload form and delete/change access
