@@ -29,11 +29,14 @@
         <td><%= object[:last_modified] %></td>
         <td><%= object[:size] %></td>
         <td>
-          <form method="POST" role="form">
+          <form method="POST" role="form" action="/objects/edit">
             <%= object[:public] ? 'Public' : 'Private' %>
 
-            <!--            <input name="bucket_name" type="hidden" value=<%#= bucket[:name] %>/>-->
-            <!--            <input name="bucket_region" type="hidden" value=<%#= bucket[:region] %>/>-->
+            <input name="bucket_name" type="hidden" value=<%= @bucket.name %>>
+            <input name="bucket_region" type="hidden" value=<%= @region %>>
+            <!--            refactor-->
+            <input name="object_name" type="hidden" value=<%= object[:name].split(' ').join('_') %>>
+            <input name="object_public" type="hidden" value=<%= object[:public] %>>
 
             <button type="submit" class="btn btn-sm btn-info">&olarr;</button>
           </form>
@@ -41,10 +44,11 @@
         <td>
 
           <form method="POST" role="form" action="/objects">
-            <input name="_method" type="hidden" value="delete" />
-            <input name="bucket_name" type="hidden" value=<%= @bucket.name %> />
-            <input name="bucket_region" type="hidden" value=<%= @region %> />
-            <input name="object_name" type="hidden" value=<%= object[:name].split(' ').join('_') %> />
+            <input name="_method" type="hidden" value="delete"/>
+            <input name="bucket_name" type="hidden" value=<%= @bucket.name %>>
+            <input name="bucket_region" type="hidden" value=<%= @region %>>
+<!--            refactor-->
+            <input name="object_name" type="hidden" value=<%= object[:name].split(' ').join('_') %>>
             <button type="submit" class="btn btn-danger">&times;</button>
           </form>
         </td>

@@ -102,8 +102,24 @@ class AwsSinatra < Sinatra::Application
     redirect back, 302
   end
 
+  post '/objects/edit' do
+    client   = AwsS3Client.new(settings.aws, region: params['bucket_region'])
+    bucket   = client.resource.bucket(params['bucket_name'])
+    object = bucket.object(params['object_name'])
+
+    acl = params['object_public'] == 'true' ? 'private' : 'public-read'
+
+    client.client.put_object_acl(acl: acl, bucket: bucket.name, key: object.key)
+  rescue => e
+    flash[:danger] = e.message
+  ensure
+    redirect back
+  end
+
   # TODO:
-  # configure upload form and delete/change access
+  # configure change access to files
+  #
+  # create classes Bucket, Object, AwsS3Client and work with using them, not only AwsS3Client
   not_found do
     erb :'404'
   end
