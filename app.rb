@@ -59,16 +59,38 @@ class AwsSinatra < Sinatra::Application
 
   get '/buckets/:name' do
     @objects = AwsS3Client.new(settings.aws).get_objects(params['name'])
+    @bucket  = AwsS3Client.new(settings.aws).resource.bucket(params['name'])
+    @region = AwsS3Client.new(settings.aws).client.get_bucket_location(bucket: @bucket.name).location_constraint
     erb :'buckets/show'
   rescue => e
     flash[:danger] = e.message
     redirect '/buckets', 302
   end
 
+  post '/objects/new' do
+    if params['file'].nil? || params['file']['filename'].to_s.empty?
+      flash[:danger] = 'Invalid filename'
+      redirect back
+    end
+    filename = params['file']['filename']
+    tempfile = params['file']['tempfile']
+    bucket   = AwsS3Client.new(settings.aws, region: params['bucket_region']).resource.bucket(params['bucket_name'])
+
+    obj = bucket.object(filename)
+    if obj.upload_file(tempfile)
+      flash[:success] = 'File uploaded!'
+    else
+      flash[:danger] = 'File not uploaded!'
+    end
+  rescue => e
+    flash[:danger] = e.message
+  ensure
+    redirect back
+  end
+
 
   # TODO:
-  # add page with objects listing(table like buckets) with buttons for deleting and change public
-  # under table form with file_filed for loading object
+  # configure upload form and delete/change access
   not_found do
     erb :'404'
   end

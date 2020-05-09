@@ -21,9 +21,9 @@ class AwsS3Client
   ]
   attr_reader :client, :resource
 
-  def initialize(settings)
+  def initialize(settings, region: settings[:region])
     @credentials = credentials(settings)
-    @client      = Aws::S3::Client.new(region:      settings[:region],
+    @client      = Aws::S3::Client.new(region:      region,
                                        credentials: @credentials)
     @resource    = Aws::S3::Resource.new(client: client)
   end
