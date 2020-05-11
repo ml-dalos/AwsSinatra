@@ -6,10 +6,10 @@
       <div class="col-4">
         <div class="card">
           <div class="card-body">
-            <form method="POST" role="form" class="needs-validation">
+            <form method="POST" role="form" class="needs-validation" name="bucket">
               <div class="form-group">
                 <label for="bucketName">Name</label>
-                <input name="bucket_name" class="form-control" id="bucketName" aria-describedby="bucketNameHelp" required>
+                <input name="bucket[name]" class="form-control" id="bucketName" aria-describedby="bucketNameHelp" required>
                 <small id="bucketNameHelp" class="form-text text-muted">Bucket name must be unique and must not contain
                   spaces
                   or
@@ -17,16 +17,16 @@
                 </small>
               </div>
               <div class="form-group">
-                <select name="bucket_region" class="custom-select" required>
+                <select name="bucket[region]" class="custom-select" required>
                   <option value="" disabled selected>Select region</option>
-                  <% AwsS3Client::VALID_REGIONS.each do |region| %>
+                  <% AWS::VALID_REGIONS.each do |region| %>
                     <option value=<%= region %>><%= region %></option>
                   <% end %>
                 </select>
               </div>
               <div class="form-group">
                 <div class="form-check pl-4">
-                  <input name="bucket_private" type="checkbox" class="form-check-input" id="private">
+                  <input name="bucket[private]" type="checkbox" class="form-check-input" id="private">
                   <label class="form-check-label" for="private">Private</label>
                 </div>
               </div>

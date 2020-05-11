@@ -20,19 +20,19 @@
     </tr>
     </thead>
     <tbody>
-    <% @buckets.each do |bucket| %>
+    <% @buckets.each.with_index do |bucket, index| %>
       <tr>
-        <th scope="row"><%= bucket[:index] %></th>
-        <td><a href="/buckets/<%= bucket[:name] %>" class="text-dark"><%= bucket[:name] %></td>
-        <td><%= bucket[:total_objects] %></td>
-        <td><%= bucket[:creation_date] %></td>
-        <td><%= bucket[:access] %></td>
-        <td><%= bucket[:region] %></td>
+        <th scope="row"><%= index.next %></th>
+        <td><a href="/buckets/<%= bucket.name %>" class="text-dark"><%= bucket.name %></td>
+        <td><%= bucket.total_objects %></td>
+        <td><%= bucket.creation_date %></td>
+        <td><%= bucket.access %></td>
+        <td><%= bucket.region %></td>
         <td>
           <form method="POST" role="form">
             <input name="_method" type="hidden" value="delete" />
-            <input name="bucket_name" type="hidden" value=<%= bucket[:name] %> />
-            <input name="bucket_region" type="hidden" value=<%= bucket[:region] %> />
+            <input name="bucket[name]" type="hidden" value=<%= bucket.name %> />
+            <input name="bucket[region]" type="hidden" value=<%= bucket.region %> />
 
             <button type="submit" class="btn btn-danger">&times;</button>
           </form>

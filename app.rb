@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './lib/aws_s3_client'
+require './lib/aws/aws'
 
 class AwsSinatra < Sinatra::Application
   register Sinatra::ConfigFile
@@ -11,37 +11,46 @@ class AwsSinatra < Sinatra::Application
 
   config_file 'config/secrets.yml'
 
-  use Rack::Auth::Basic, "Protected Area" do |username, password|
+  use Rack::Auth::Basic, 'Protected Area' do |username, password|
     username == settings.auth[:username] && password == settings.auth[:password]
   end
 
   get '/' do
     @author = settings.author
     erb :index
+  rescue => e
+    flash[:danger] = e.message
+    redirect '/error', 302
   end
 
   get '/buckets' do
-    client   = AwsS3Client.new(settings.aws)
+    client   = AWS::Client.new(settings.aws)
     @buckets = client.buckets
     erb :'buckets/index'
+  rescue => e
+    flash[:danger] = e.message
+    redirect '/', 302
   end
 
   get '/buckets/new' do
     erb :'buckets/new'
+  rescue => e
+    flash[:danger] = e.message
+    redirect '/buckets', 302
   end
 
   post '/buckets/new' do
-    bucket = nil
-    bucket = AwsS3Client.new(settings.aws).new_bucket(request.params)
+    client = AWS::Client.new(settings.aws, region: params[:bucket][:region])
+    AWS::Bucket.create(client, name: params[:bucket][:name], private: params[:bucket][:private])
+    flash[:success] = "Bucket created!"
   rescue Aws::S3::Errors::BucketAlreadyExists
-    flash[:danger] = "Bucket with name #{request.params['bucket_name']} already exists!"
+    flash[:danger] = "Bucket with name #{request.params[:bucket][:name]} already exists!"
   rescue Aws::S3::Errors::BucketAlreadyOwnedByYou
-    flash[:danger] = "Bucket with name #{request.params['bucket_name']} already owned by you!"
+    flash[:danger] = "Bucket with name #{request.params[:bucket][:name]} already owned by you!"
   rescue => e
     flash[:danger] = e.message
   ensure
-    if bucket
-      flash[:success] = "Bucket created!"
+    if flash.next[:success]
       redirect '/buckets', 302
     else
       redirect '/buckets/new', 302
@@ -49,7 +58,8 @@ class AwsSinatra < Sinatra::Application
   end
 
   delete '/buckets' do
-    AwsS3Client.new(settings.aws).delete_bucket(request.params)
+    client = AWS::Client.new(settings.aws, region: params[:bucket][:region])
+    AWS::Bucket.delete(client, name: params[:bucket][:name])
     flash[:success] = 'Bucket deleted!'
   rescue => e
     flash[:danger] = e.message
@@ -58,11 +68,9 @@ class AwsSinatra < Sinatra::Application
   end
 
   get '/buckets/:name' do
-    # refactor
-    client = AwsS3Client.new(settings.aws)
-    @objects = client.get_objects(params['name'])
-    @bucket  = client.resource.bucket(params['name'])
-    @region = client.client.get_bucket_location(bucket: @bucket.name).location_constraint
+    client   = AWS::Client.new(settings.aws)
+    @bucket = client.buckets.find { |bucket| bucket.name == params[:name] }
+    @objects = @bucket.objects
     erb :'buckets/show'
   rescue => e
     flash[:danger] = e.message
@@ -70,17 +78,8 @@ class AwsSinatra < Sinatra::Application
   end
 
   post '/objects/new' do
-    if params['file'].nil? || params['file']['filename'].to_s.empty?
-      flash[:danger] = 'Invalid filename'
-      redirect back
-    end
-    # Add params validation
-    filename = params['file']['filename']
-    tempfile = params['file']['tempfile']
-    bucket   = AwsS3Client.new(settings.aws, region: params['bucket_region']).resource.bucket(params['bucket_name'])
-
-    obj = bucket.object(filename)
-    if obj.upload_file(tempfile)
+    bucket = AWS::Client.new(settings.aws, region: params[:bucket][:region]).resource.bucket(params[:bucket][:name])
+    if AWS::Object.create(bucket, tempfile: params[:file][:tempfile], filename: params[:file][:filename])
       flash[:success] = 'File uploaded!'
     else
       flash[:danger] = 'File not uploaded!'
@@ -92,9 +91,8 @@ class AwsSinatra < Sinatra::Application
   end
 
   delete '/objects' do
-    # refactor
-    bucket   = AwsS3Client.new(settings.aws, region: params['bucket_region']).resource.bucket(params['bucket_name'])
-    bucket.object(params['object_name']).delete
+    bucket = AWS::Client.new(settings.aws, region: params[:bucket][:region]).resource.bucket(params[:bucket][:name])
+    AWS::Object.delete(bucket, name: params[:object][:name])
     flash[:success] = 'Object deleted!'
   rescue => e
     flash[:danger] = e.message
@@ -103,25 +101,21 @@ class AwsSinatra < Sinatra::Application
   end
 
   post '/objects/edit' do
-    client   = AwsS3Client.new(settings.aws, region: params['bucket_region'])
-    bucket   = client.resource.bucket(params['bucket_name'])
-    object = bucket.object(params['object_name'])
-
-    acl = params['object_public'] == 'true' ? 'private' : 'public-read'
-
-    client.client.put_object_acl(acl: acl, bucket: bucket.name, key: object.key)
+    client = AWS::Client.new(settings.aws, region: params[:bucket][:region])
+    access = params[:object][:public] == 'true' ? 'private' : 'public-read'
+    AWS::Object.change_access(client, access: access, bucket: params[:bucket][:name], key: params[:object][:name])
   rescue => e
     flash[:danger] = e.message
   ensure
     redirect back
   end
 
-  # TODO:
-  # configure change access to files
-  #
-  # create classes Bucket, Object, AwsS3Client and work with using them, not only AwsS3Client
   not_found do
     erb :'404'
+  end
+
+  get '/error' do
+    erb :'500'
   end
 
   error do

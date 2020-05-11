@@ -1,2 +1,5 @@
 /.idea
 /config/secrets.yml
+/tmp
+/log
+/public
