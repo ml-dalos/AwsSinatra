@@ -16,3 +16,6 @@ gem 'aws-sdk-s3'
 
 # Pry for debug
 gem 'pry-byebug'
+
+# Passenger for deploy
+gem 'passenger'
