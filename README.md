@@ -1,6 +1,6 @@
-### Simple Sinatra APP for AWS SDK testing
+### Simple Sinatra APP to explore AWS SDK features
 
-Add AWS credentials into file config/secrets.yml:
+Add AWS credentials, information about author and credentials for basic auth into file config/secrets.yml:
 
 ```
 aws:
